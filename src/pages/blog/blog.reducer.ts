@@ -1,4 +1,5 @@
-import { createAction, createReducer } from '@reduxjs/toolkit'
+import { createAction, createReducer, current } from '@reduxjs/toolkit'
+import { log } from 'console'
 import { initialPostList } from 'constants/blog'
 import { Post } from 'types/blog.type'
 
@@ -49,6 +50,10 @@ const blogReducer = createReducer(initialState, (builder) => {
       })
       state.editingPost = null
     })
+    .addMatcher((action)=>action.type.includes('cancel'),(state,action)=>{
+      console.log(current(state))
+    })
+    .addDefaultCase((state,action)=>{})
 })
 
 export default blogReducer
