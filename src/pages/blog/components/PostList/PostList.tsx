@@ -1,4 +1,4 @@
-import { deletePost } from 'pages/blog/blog.reducer'
+import { cancelEditingPost, deletePost, startEditingPost } from 'pages/blog/blog.reducer'
 import PostItem from 'pages/blog/components/PostItem'
 import React from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -6,10 +6,15 @@ import { RootState } from 'store'
 
 export default function PostList() {
   const postList = useSelector((state: RootState) => state.blog.postList)
+
   const dispatch = useDispatch()
-  const handleDelete = (postId : string) => {
+  const handleDelete = (postId: string) => {
     dispatch(deletePost(postId))
   }
+  const handleStartEditPost = (postId: string) => {
+    dispatch(startEditingPost(postId))
+  }
+
   return (
     <div className='bg-white py-6 sm:py-8 lg:py-12'>
       <div className='mx-auto max-w-screen-xl px-4 md:px-8'>
@@ -20,8 +25,8 @@ export default function PostList() {
           </p>
         </div>
         <div className='grid gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-2 xl:grid-cols-2 xl:gap-8'>
-          {postList.map(post => (
-            <PostItem key={post.id} post={post} handleDelete={handleDelete}/>
+          {postList.map((post) => (
+            <PostItem key={post.id} post={post} handleDelete={handleDelete} handleStartEditPost={handleStartEditPost} />
           ))}
         </div>
       </div>
