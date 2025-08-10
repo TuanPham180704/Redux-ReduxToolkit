@@ -1,8 +1,9 @@
-import Blog from "pages/blog"
+import BlogLocal from "pages/blog_"
+
 
 function App() {
   return (
-    <Blog/>
+    <BlogLocal/>
   )
 }
 
