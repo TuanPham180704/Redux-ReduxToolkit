@@ -1,35 +1,68 @@
-import { addPost, cancelEditingPost, finishUpdatePost } from 'pages/blog/blog.reducer'
+import { unwrapResult } from '@reduxjs/toolkit'
+import { log } from 'console'
+import { addPost, cancelEditingPost, updatePost } from 'pages/remote_blog/blog.slide'
 import { Fragment, useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from 'store'
+import { RootState, useAppDispatch } from 'store'
 import { Post } from 'types/blog.type'
 
 const initialState: Post = {
-  id: '',
   description: '',
   featuredImage: '',
   publishDate: '',
   published: false,
-  title: ''
+  title: '',
+  id: ''
+}
+interface ErrorForm {
+  publishDate: string
 }
 
 export default function CreatePost() {
   const [formData, setFormData] = useState<Post>(initialState)
-  const dispatch = useDispatch()
+  const [errorForm, setErrorForm] = useState<null | ErrorForm>(null)
+  const dispatch = useAppDispatch()
+  const loading = useSelector((state: RootState) => state.blog.loading)
   const edittingPost = useSelector((state: RootState) => state.blog.editingPost)
   useEffect(() => {
     setFormData(edittingPost || initialState)
   }, [edittingPost])
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (edittingPost) {
-      dispatch(finishUpdatePost(formData))
+      dispatch(
+        updatePost({
+          postId: edittingPost.id,
+          body: formData
+        })
+      )
+        .unwrap()
+        .then(() => {
+          setFormData(initialState)
+          if (errorForm) {
+            setErrorForm(null)
+          }
+          dispatch(cancelEditingPost())
+        })
+        .catch((err) => {
+          setErrorForm(err.error)
+        })
     } else {
-      const formDataWithId = { ...formData, id: new Date().toISOString() }
-      dispatch(addPost(formDataWithId))
+      // const { id, ...dataWithoutId } = formData
+      //  const res = dispatch(addPost(dataWithoutId)) // loại bỏ id trước khi gửi
+     try {
+       const res = await dispatch(addPost(formData))
+      unwrapResult(res)
+      setFormData(initialState)
+       if (errorForm) {
+            setErrorForm(null)
+          }
+     } catch (error : any)  {
+      setErrorForm(error.error)
+     }
     }
-    setFormData(initialState)
   }
+
   const handelCancleEditingPost = () => {
     dispatch(cancelEditingPost())
   }
@@ -81,18 +114,31 @@ export default function CreatePost() {
         </div>
       </div>
       <div className='mb-6'>
-        <label htmlFor='publishDate' className='mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300'>
+        <label
+          htmlFor='publishDate'
+          className={`mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300 ${errorForm?.publishDate ? 'text-red-500' : 'text-gray-900'}`}
+        >
           Publish Date
         </label>
         <input
           type='datetime-local'
           id='publishDate'
-          className='block w-56 rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-blue-500'
+          className={`block w-56 rounded-lg border  p-2.5 text-sm  focus:outline-none  ${
+            errorForm?.publishDate
+              ? 'border-red-500 bg-red-50 text-red-900 placeholder-red-700 focus:border-red-500 focus:ring-red-500'
+              : 'border-gray-300 bg-gray-50 text-gray-900 focus:border-blue-500 focus:ring-blue-500'
+          }`}
           placeholder='Title'
           required
           value={formData.publishDate}
           onChange={(e) => setFormData((prev) => ({ ...prev, publishDate: e.target.value }))}
         />
+        {errorForm?.publishDate && (
+          <p className='mt-2 text-sm text-red-600'>
+            <span className='font-medium'>Lỗi!</span>
+            {errorForm?.publishDate}
+          </p>
+        )}
       </div>
       <div className='mb-6 flex items-center'>
         <input

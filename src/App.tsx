@@ -1,10 +1,7 @@
-import BlogLocal from "pages/blog_"
-
-
+import RemoteBlogLocal from "pages/remote_blog"
 function App() {
   return (
-    <BlogLocal/>
+    <RemoteBlogLocal/>
   )
 }
-
 export default App

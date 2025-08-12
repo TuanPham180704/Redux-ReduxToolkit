@@ -1,13 +1,25 @@
-import { cancelEditingPost, deletePost, startEditingPost } from 'pages/blog_/blog.slide'
-import PostItem from 'pages/blog_/components/PostItem'
-import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from 'store'
+import { cancelEditingPost, deletePost, startEditingPost } from 'pages/remote_blog/blog.slide'
+import PostItem from 'pages/remote_blog/components/PostItem'
+import { getPostList } from 'pages/remote_blog/blog.slide'
+
+import React, { Fragment, useEffect } from 'react'
+import { useSelector } from 'react-redux'
+import { RootState, useAppDispatch } from 'store'
+import Skeleton from 'pages/remote_blog/components/SkeletonPost'
+import { log } from 'console'
 
 export default function PostList() {
   const postList = useSelector((state: RootState) => state.blog.postList)
+  const loading = useSelector((state: RootState) => state.blog.loading)
 
-  const dispatch = useDispatch()
+  const dispatch = useAppDispatch()
+  useEffect(() => {
+    const promise = dispatch(getPostList())
+    return () => {
+      promise.abort()
+    }
+  }, [dispatch])
+
   const handleDelete = (postId: string) => {
     dispatch(deletePost(postId))
   }
@@ -25,9 +37,21 @@ export default function PostList() {
           </p>
         </div>
         <div className='grid gap-4 sm:grid-cols-2 md:gap-6 lg:grid-cols-2 xl:grid-cols-2 xl:gap-8'>
-          {postList.map((post) => (
-            <PostItem key={post.id} post={post} handleDelete={handleDelete} handleStartEditPost={handleStartEditPost} />
-          ))}
+          {loading && (
+            <Fragment>
+              <Skeleton />
+              <Skeleton />
+            </Fragment>
+          )}
+          {!loading &&
+            postList.map((post) => (
+              <PostItem
+                key={post.id}
+                post={post}
+                handleDelete={handleDelete}
+                handleStartEditPost={handleStartEditPost}
+              />
+            ))}
         </div>
       </div>
     </div>

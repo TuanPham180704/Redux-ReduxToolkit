@@ -1,4 +1,3 @@
-import BlogLocal from "pages/blog_/Blog";
+import RemoteBlogLocal from "pages/remote_blog/Blog";
 
-
-export default BlogLocal
+export default RemoteBlogLocal
